@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>校服創意Show｜導師投票回報</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=DM+Mono:wght@400;500&display=swap');
+
+  :root {
+    --purple: #5B2D8E;
+    --purple-mid: #7E57C2;
+    --purple-light: #EDE7F6;
+    --gold: #F57F17;
+    --gold-light: #FFF8E1;
+    --green: #2E7D32;
+    --green-light: #E8F5E9;
+    --red: #C62828;
+    --red-light: #FFEBEE;
+    --bg: #F8F6FC;
+    --card: #FFFFFF;
+    --text: #1A1A2E;
+    --muted: #6B6B8A;
+    --border: #E0D9F5;
+    --radius: 16px;
+    --shadow: 0 4px 24px rgba(91,45,142,0.10);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Noto Sans TC', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ── 頂部 ── */
+  header {
+    background: var(--purple);
+    color: #fff;
+    padding: 20px 20px 16px;
+    position: sticky; top: 0; z-index: 100;
+    box-shadow: 0 2px 16px rgba(91,45,142,0.3);
+  }
+  header h1 { font-size: 18px; font-weight: 900; letter-spacing: .5px; }
+  header p  { font-size: 12px; opacity: .75; margin-top: 2px; }
+
+  .tab-bar {
+    display: flex; gap: 0;
+    background: rgba(255,255,255,0.12);
+    border-radius: 10px; padding: 3px;
+    margin-top: 12px;
+  }
+  .tab-btn {
+    flex: 1; padding: 8px 4px; border: none; background: transparent;
+    color: rgba(255,255,255,0.65); font-family: inherit; font-size: 13px;
+    font-weight: 500; border-radius: 8px; cursor: pointer; transition: all .2s;
+  }
+  .tab-btn.active {
+    background: #fff; color: var(--purple); font-weight: 700;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+
+  /* ── 主內容 ── */
+  main { padding: 16px; max-width: 560px; margin: 0 auto; }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* ── 卡片 ── */
+  .card {
+    background: var(--card); border-radius: var(--radius);
+    box-shadow: var(--shadow); padding: 20px; margin-bottom: 14px;
+  }
+  .card-title {
+    font-size: 13px; font-weight: 700; color: var(--purple);
+    text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .card-title::before {
+    content: ''; display: block; width: 3px; height: 16px;
+    background: var(--purple); border-radius: 2px;
+  }
+
+  /* ── 表單元素 ── */
+  label { display: block; font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
+  label span.req { color: var(--red); margin-left: 2px; }
+
+  input[type=date], select, input[type=number], textarea {
+    width: 100%; padding: 12px 14px;
+    border: 2px solid var(--border); border-radius: 10px;
+    font-family: inherit; font-size: 15px; color: var(--text);
+    background: #fff; outline: none; transition: border .2s;
+    -webkit-appearance: none;
+  }
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--purple-mid);
+    box-shadow: 0 0 0 3px rgba(126,87,194,0.12);
+  }
+  select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%235B2D8E' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; }
+
+  .form-row { margin-bottom: 16px; }
+  .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+
+  /* ── 班級資訊badge ── */
+  #cls-badge {
+    display: none; margin-top: 10px; padding: 10px 14px;
+    background: var(--purple-light); border-radius: 10px;
+    font-size: 13px; color: var(--purple); font-weight: 600;
+  }
+  #cls-badge.show { display: block; }
+
+  /* ── 座號格子 ── */
+  #seat-grid { display: none; }
+  #seat-grid.show { display: block; }
+
+  .seat-grid-wrap {
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px;
+    margin-top: 10px;
+  }
+  .seat-cell { text-align: center; }
+  .seat-cell label {
+    font-size: 11px; color: var(--muted); margin-bottom: 4px; font-weight: 500;
+  }
+  .seat-cell input[type=number] {
+    padding: 8px 4px; text-align: center; font-size: 15px; font-weight: 700;
+    border-width: 1.5px;
+  }
+  .seat-cell input:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(245,127,23,0.12); }
+  .seat-cell input.has-vote { border-color: var(--green); background: var(--green-light); color: var(--green); }
+
+  /* ── 貼上模式 ── */
+  textarea {
+    min-height: 160px; resize: vertical; font-size: 14px;
+    font-family: 'DM Mono', monospace; line-height: 1.7;
+  }
+  .paste-hint {
+    background: var(--gold-light); border: 1px solid #FFE082;
+    border-radius: 10px; padding: 12px 14px; margin-bottom: 14px;
+    font-size: 13px; color: #5D4037; line-height: 1.7;
+  }
+  .paste-hint strong { color: var(--gold); }
+
+  /* ── 解析預覽 ── */
+  #parsed-preview { display: none; }
+  #parsed-preview.show { display: block; }
+  .preview-table {
+    width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px;
+  }
+  .preview-table th {
+    background: var(--purple); color: #fff; padding: 8px 10px; text-align: center;
+  }
+  .preview-table td { padding: 7px 10px; border-bottom: 1px solid var(--border); text-align: center; }
+  .preview-table tr:last-child td { border-bottom: none; }
+  .preview-table .has-v { font-weight: 700; color: var(--green); }
+  .sum-row { background: var(--purple-light); font-weight: 700; color: var(--purple); }
+
+  /* ── 按鈕 ── */
+  .btn {
+    width: 100%; padding: 16px; border: none; border-radius: 12px;
+    font-family: inherit; font-size: 16px; font-weight: 700;
+    cursor: pointer; transition: all .2s; letter-spacing: .5px;
+  }
+  .btn-primary { background: var(--purple); color: #fff; }
+  .btn-primary:active { transform: scale(.98); background: #4A2472; }
+  .btn-secondary { background: var(--purple-light); color: var(--purple); margin-top: 8px; }
+  .btn-parse { background: var(--gold); color: #fff; }
+  .btn-parse:active { transform: scale(.98); }
+
+  /* ── 成功畫面 ── */
+  #success-panel {
+    display: none; text-align: center; padding: 40px 20px;
+  }
+  #success-panel.show { display: block; }
+  .success-icon { font-size: 64px; margin-bottom: 16px; }
+  .success-title { font-size: 22px; font-weight: 900; color: var(--green); margin-bottom: 8px; }
+  .success-sub { font-size: 14px; color: var(--muted); line-height: 1.7; }
+  .copy-box {
+    margin-top: 20px; background: var(--text); color: #a9b7ff;
+    border-radius: 12px; padding: 16px; font-family: 'DM Mono', monospace;
+    font-size: 12px; text-align: left; line-height: 1.8; white-space: pre-wrap;
+    position: relative;
+  }
+  .copy-box-label { font-size: 11px; color: var(--muted); margin-bottom: 6px; }
+  .btn-copy { margin-top: 10px; background: var(--green); color: #fff; }
+
+  /* ── 進度條 ── */
+  .progress-bar {
+    height: 4px; background: var(--border); border-radius: 4px; overflow: hidden;
+    margin-bottom: 16px;
+  }
+  .progress-fill {
+    height: 100%; background: linear-gradient(90deg, var(--purple-mid), var(--gold));
+    border-radius: 4px; transition: width .3s;
+  }
+
+  /* ── 票數驗證 ── */
+  .vote-check {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 14px; border-radius: 10px; font-size: 13px;
+    font-weight: 600; margin-top: 12px;
+  }
+  .vote-check.ok  { background: var(--green-light); color: var(--green); }
+  .vote-check.err { background: var(--red-light);   color: var(--red); }
+  .vote-check.neu { background: var(--purple-light); color: var(--purple); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🎽 校服創意Show｜投票回報</h1>
+  <p>樹人家商 2026 ── 導師每日回報系統</p>
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab('form')">📋 表單填寫</button>
+    <button class="tab-btn" onclick="switchTab('paste')">📋 貼上清單</button>
+  </div>
+</header>
+
+<main>
+
+<!-- ===== 表單填寫模式 ===== -->
+<div id="panel-form" class="panel active">
+
+  <div class="progress-bar"><div class="progress-fill" id="prog" style="width:0%"></div></div>
+
+  <div class="card">
+    <div class="card-title">基本資料</div>
+    <div class="form-row-2">
+      <div>
+        <label>回報日期 <span class="req">*</span></label>
+        <input type="date" id="f-date" onchange="updateProgress()">
+      </div>
+      <div>
+        <label>班級 <span class="req">*</span></label>
+        <select id="f-cls" onchange="onClsChange()">
+          <option value="">請選擇</option>
+        </select>
+      </div>
+    </div>
+    <div id="cls-badge"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">今日投票數</div>
+    <div class="form-row">
+      <label>全班投票總數 <span class="req">*</span></label>
+      <input type="number" id="f-total" min="0" placeholder="0" oninput="checkVoteSum()">
+    </div>
+    <div id="vote-check-bar" class="vote-check neu" style="display:none">
+      <span id="vote-check-icon">○</span>
+      <span id="vote-check-msg">請填入各座號票數</span>
+    </div>
+  </div>
+
+  <div class="card" id="seat-grid">
+    <div class="card-title">座號票數明細</div>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:10px">只填有票的座號，沒票留空即可</p>
+    <div class="seat-grid-wrap" id="seat-inputs"></div>
+  </div>
+
+  <button class="btn btn-primary" onclick="submitForm()">送出回報</button>
+
+</div>
+
+<!-- ===== 貼上清單模式 ===== -->
+<div id="panel-paste" class="panel">
+
+  <div class="paste-hint">
+    <strong>支援任何格式，直接貼！</strong><br>
+    ✅ <code>01:3, 26:11, 35:7</code><br>
+    ✅ <code>1號1票、2號3票</code><br>
+    ✅ <code>01 3票<br>26 11票</code><br>
+    ✅ 只填總票數也可以
+  </div>
+
+  <div class="card">
+    <div class="card-title">基本資料</div>
+    <div class="form-row-2">
+      <div>
+        <label>回報日期 <span class="req">*</span></label>
+        <input type="date" id="p-date">
+      </div>
+      <div>
+        <label>班級 <span class="req">*</span></label>
+        <select id="p-cls" onchange="onPasteClsChange()">
+          <option value="">請選擇</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <label>全班投票總數 <span class="req">*</span></label>
+      <input type="number" id="p-total" min="0" placeholder="0">
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">座號票數清單</div>
+    <textarea id="p-text" placeholder="直接貼上或輸入，例如：&#10;01:1&#10;03:3&#10;26:11&#10;35:7&#10;&#10;或：01 1票、03 3票、26 11票"></textarea>
+    <button class="btn btn-parse" style="margin-top:12px" onclick="parsePaste()">🔍 解析預覽</button>
+  </div>
+
+  <div class="card" id="parsed-preview">
+    <div class="card-title">解析結果確認</div>
+    <div id="preview-content"></div>
+  </div>
+
+  <button class="btn btn-primary" onclick="submitPaste()">確認送出</button>
+
+</div>
+
+<!-- ===== 成功畫面 ===== -->
+<div id="success-panel">
+  <div class="success-icon">✅</div>
+  <div class="success-title">回報成功！</div>
+  <div class="success-sub" id="success-sub"></div>
+  <div id="sync-status" style="display:none;margin-top:14px;padding:12px 14px;border-radius:10px;font-size:13px;font-weight:600;transition:all .3s"></div>
+  <div class="copy-box-label" style="margin-top:16px;font-size:12px;color:var(--muted)">可複製貼到LINE確認群組：</div>
+  <div class="copy-box" id="copy-content"></div>
+  <button class="btn btn-copy" onclick="copyResult()">複製訊息</button>
+  <button class="btn btn-secondary" onclick="resetForm()">繼續回報下一班</button>
+</div>
+
+</main>
+
+<script>
+// ===== 班級資料 =====
+const CLASSES = [
+  {g:'一',c:'商一忠',  sz:37,mx:41},{g:'一',c:'資處一忠',sz:43,mx:45},{g:'一',c:'觀一忠',  sz:45,mx:45},
+  {g:'一',c:'觀一孝',  sz:14,mx:19},{g:'一',c:'觀一仁',  sz:16,mx:19},{g:'一',c:'餐一忠',  sz:44,mx:47},
+  {g:'一',c:'餐一孝',  sz:41,mx:47},{g:'一',c:'餐一仁',  sz:40,mx:46},{g:'一',c:'餐一愛',  sz:39,mx:47},
+  {g:'一',c:'餐一信',  sz:30,mx:35},{g:'一',c:'餐一義',  sz:32,mx:36},{g:'一',c:'餐一和',  sz:32,mx:33},
+  {g:'一',c:'餐一平',  sz:33,mx:35},{g:'一',c:'幼一忠',  sz:45,mx:49},{g:'一',c:'美一忠',  sz:40,mx:46},
+  {g:'一',c:'美一孝',  sz:40,mx:47},{g:'一',c:'美一仁',  sz:40,mx:45},{g:'一',c:'影一忠',  sz:28,mx:33},
+  {g:'一',c:'資訊一忠',sz:38,mx:46},{g:'一',c:'資訊一孝',sz:27,mx:31},{g:'一',c:'資訊一仁',sz:31,mx:32},
+  {g:'二',c:'商二忠',  sz:40,mx:46},{g:'二',c:'資處二忠',sz:43,mx:47},{g:'二',c:'資處二孝',sz:41,mx:46},
+  {g:'二',c:'觀二忠',  sz:33,mx:41},{g:'二',c:'觀二孝',  sz:32,mx:39},{g:'二',c:'餐二忠',  sz:44,mx:45},
+  {g:'二',c:'餐二孝',  sz:40,mx:44},{g:'二',c:'餐二仁',  sz:40,mx:45},{g:'二',c:'餐二愛',  sz:40,mx:46},
+  {g:'二',c:'餐二信',  sz:40,mx:44},{g:'二',c:'餐二義',  sz:21,mx:44},{g:'二',c:'餐二和',  sz:21,mx:44},
+  {g:'二',c:'幼二忠',  sz:42,mx:48},{g:'二',c:'美二忠',  sz:44,mx:45},{g:'二',c:'美二孝',  sz:39,mx:45},
+  {g:'二',c:'美二仁',  sz:29,mx:38},{g:'二',c:'影二忠',  sz:41,mx:45},{g:'二',c:'影二孝',  sz:10,mx:16},
+  {g:'二',c:'資訊二忠',sz:42,mx:46},{g:'二',c:'資訊二孝',sz:25,mx:27},{g:'二',c:'資訊二仁',sz:25,mx:27},
+  {g:'三',c:'商三忠',  sz:33,mx:42},{g:'三',c:'電三忠',  sz:39,mx:43},{g:'三',c:'資處三忠',sz:40,mx:44},
+  {g:'三',c:'資處三孝',sz:42,mx:46},{g:'三',c:'觀三忠',  sz:35,mx:41},{g:'三',c:'觀三孝',  sz:30,mx:39},
+  {g:'三',c:'觀三仁',  sz:17,mx:25},{g:'三',c:'餐三忠',  sz:44,mx:46},{g:'三',c:'餐三孝',  sz:35,mx:46},
+  {g:'三',c:'餐三仁',  sz:37,mx:46},{g:'三',c:'餐三愛',  sz:38,mx:46},{g:'三',c:'餐三信',  sz:40,mx:46},
+  {g:'三',c:'餐三義',  sz:29,mx:41},{g:'三',c:'餐三和',  sz:31,mx:43},{g:'三',c:'幼三忠',  sz:43,mx:45},
+  {g:'三',c:'幼三孝',  sz:41,mx:45},{g:'三',c:'美三忠',  sz:35,mx:44},{g:'三',c:'美三孝',  sz:31,mx:42},
+  {g:'三',c:'美三仁',  sz:26,mx:35},{g:'三',c:'影三忠',  sz:25,mx:35},{g:'三',c:'資訊三忠',sz:43,mx:46},
+];
+
+// ===== 初始化 =====
+window.onload = () => {
+  // 設定今天日期（預設昨天）
+  const d = new Date(); d.setDate(d.getDate()-1);
+  const ds = d.toISOString().split('T')[0];
+  document.getElementById('f-date').value = ds;
+  document.getElementById('p-date').value = ds;
+
+  // 填班級選單（兩個）
+  ['f-cls','p-cls'].forEach(id => {
+    const sel = document.getElementById(id);
+    let curGrade = '';
+    CLASSES.forEach(cls => {
+      if (cls.g !== curGrade) {
+        curGrade = cls.g;
+        const og = document.createElement('optgroup');
+        og.label = `── ${cls.g}年級 ──`;
+        sel.appendChild(og);
+      }
+      const op = document.createElement('option');
+      op.value = cls.c; op.textContent = cls.c;
+      sel.appendChild(op);
+    });
+  });
+};
+
+// ===== Tab切換 =====
+function switchTab(t) {
+  document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active', (t==='form'&&i===0)||(t==='paste'&&i===1)));
+  document.getElementById('panel-form').classList.toggle('active', t==='form');
+  document.getElementById('panel-paste').classList.toggle('active', t==='paste');
+  document.getElementById('success-panel').classList.remove('show');
+}
+
+// ===== 選班級 → 顯示座號格子 =====
+function onClsChange() {
+  const cls = CLASSES.find(c=>c.c===document.getElementById('f-cls').value);
+  const badge = document.getElementById('cls-badge');
+  const grid  = document.getElementById('seat-grid');
+  const inputs = document.getElementById('seat-inputs');
+  if (!cls) { badge.classList.remove('show'); grid.classList.remove('show'); return; }
+
+  badge.classList.add('show');
+  badge.textContent = `${cls.g}年級｜班級人數 ${cls.sz} 人｜最大座號 ${cls.mx} 號`;
+  grid.classList.add('show');
+
+  // 清空重建座號格子
+  inputs.innerHTML = '';
+  for (let s=1; s<=cls.mx; s++) {
+    const cell = document.createElement('div');
+    cell.className = 'seat-cell';
+    cell.innerHTML = `<label>${String(s).padStart(2,'0')}</label>
+      <input type="number" id="seat-${s}" min="0" max="999" placeholder="0"
+        oninput="onSeatInput(this,${s})" inputmode="numeric">`;
+    inputs.appendChild(cell);
+  }
+  updateProgress();
+}
+
+function onSeatInput(el, seat) {
+  const v = parseInt(el.value)||0;
+  el.classList.toggle('has-vote', v>0);
+  checkVoteSum();
+}
+
+function checkVoteSum() {
+  const total = parseInt(document.getElementById('f-total').value)||0;
+  const cls   = CLASSES.find(c=>c.c===document.getElementById('f-cls').value);
+  if (!cls || total===0) { document.getElementById('vote-check-bar').style.display='none'; return; }
+
+  let sum = 0;
+  for (let s=1; s<=cls.mx; s++) {
+    sum += parseInt(document.getElementById('seat-'+s)?.value)||0;
+  }
+
+  const bar = document.getElementById('vote-check-bar');
+  const icon = document.getElementById('vote-check-icon');
+  const msg  = document.getElementById('vote-check-msg');
+  bar.style.display='flex';
+
+  if (sum===0) {
+    bar.className='vote-check neu'; icon.textContent='○'; msg.textContent='尚未填座號（僅記錄總票數）';
+  } else if (sum===total) {
+    bar.className='vote-check ok';  icon.textContent='✓'; msg.textContent=`加總 ${sum} 票 = 總票數 ✅`;
+  } else {
+    bar.className='vote-check err'; icon.textContent='✗'; msg.textContent=`加總 ${sum} 票 ≠ 總票數 ${total}，請確認`;
+  }
+  updateProgress();
+}
+
+function updateProgress() {
+  const hasDate  = !!document.getElementById('f-date').value;
+  const hasCls   = !!document.getElementById('f-cls').value;
+  const hasTotal = parseInt(document.getElementById('f-total').value)>0;
+  const score = (hasDate?33:0)+(hasCls?33:0)+(hasTotal?34:0);
+  document.getElementById('prog').style.width = score+'%';
+}
+
+// ===== 貼上模式 =====
+function onPasteClsChange() {
+  const cls = CLASSES.find(c=>c.c===document.getElementById('p-cls').value);
+  if (!cls) return;
+}
+
+// 解析任意格式的座號票數文字
+function parseVoteText(text, maxSeat) {
+  const seats = {};
+  const patterns = [
+    /(\d+)\s*[號:：]\s*(\d+)\s*票/g,   // 01號:3票 / 1號 3票
+    /(\d+)\s*[:：]\s*(\d+)/g,            // 01:3 / 01：3
+    /(\d+)\s*[,，]\s*(\d+)/g,            // 01,3
+    /(\d+)\s+(\d+)\s*票/g,               // 01 3票
+    /座號\s*(\d+)[^\d]*(\d+)/g,          // 座號01 3票
+  ];
+
+  let matched = false;
+  for (const pat of patterns) {
+    let m; pat.lastIndex=0;
+    while ((m=pat.exec(text))!==null) {
+      const s=parseInt(m[1]), v=parseInt(m[2]);
+      if (s>=1 && s<=maxSeat && v>0) { seats[s]=v; matched=true; }
+    }
+    if (matched) break;
+  }
+
+  // 若都沒匹配，試試「只有數字列」格式
+  if (!matched) {
+    const lines = text.split(/[\n,，]+/);
+    lines.forEach(line => {
+      const nums = line.trim().match(/\d+/g);
+      if (nums && nums.length>=2) {
+        const s=parseInt(nums[0]), v=parseInt(nums[1]);
+        if (s>=1 && s<=maxSeat && v>0) seats[s]=v;
+      }
+    });
+  }
+  return seats;
+}
+
+function parsePaste() {
+  const cls = CLASSES.find(c=>c.c===document.getElementById('p-cls').value);
+  if (!cls) { alert('請先選擇班級'); return; }
+  const text = document.getElementById('p-text').value.trim();
+  const total = parseInt(document.getElementById('p-total').value)||0;
+
+  const seats = parseVoteText(text, cls.mx);
+  const sum = Object.values(seats).reduce((a,b)=>a+b,0);
+
+  let html = '';
+  if (Object.keys(seats).length>0) {
+    html += '<table class="preview-table"><tr><th>座號</th><th>票數</th></tr>';
+    Object.entries(seats).sort((a,b)=>+a[0]-+b[0]).forEach(([s,v]) => {
+      html += `<tr><td>${String(+s).padStart(2,'0')}</td><td class="has-v">${v} 票</td></tr>`;
+    });
+    html += `<tr class="sum-row"><td>加總</td><td>${sum} 票</td></tr></table>`;
+    if (total>0 && sum!==total) {
+      html += `<div class="vote-check err" style="margin-top:10px">✗ 加總 ${sum} 票 ≠ 總票數 ${total}，請確認</div>`;
+    } else if (total>0) {
+      html += `<div class="vote-check ok" style="margin-top:10px">✓ 加總符合，共 ${sum} 票</div>`;
+    }
+  } else {
+    html = `<p style="color:var(--muted);font-size:13px">未解析到座號資料，將只記錄總票數 ${total} 票</p>`;
+  }
+
+  document.getElementById('preview-content').innerHTML = html;
+  document.getElementById('parsed-preview').classList.add('show');
+  window._parsedSeats = seats;
+}
+
+// ===== 送出（表單模式）=====
+function submitForm() {
+  const date  = document.getElementById('f-date').value;
+  const cls   = CLASSES.find(c=>c.c===document.getElementById('f-cls').value);
+  const total = parseInt(document.getElementById('f-total').value)||0;
+
+  if (!date || !cls)  { alert('請填寫日期和班級'); return; }
+  if (total<=0)       { alert('請填寫投票總數'); return; }
+
+  const seats = {};
+  for (let s=1; s<=cls.mx; s++) {
+    const v = parseInt(document.getElementById('seat-'+s)?.value)||0;
+    if (v>0) seats[s]=v;
+  }
+
+  const sum = Object.values(seats).reduce((a,b)=>a+b,0);
+  if (sum>0 && sum!==total) {
+    if (!confirm(`座號加總 ${sum} 票 ≠ 總票數 ${total}，確定要送出嗎？`)) return;
+  }
+
+  showSuccess(date, cls, total, seats);
+}
+
+// ===== 送出（貼上模式）=====
+function submitPaste() {
+  const date  = document.getElementById('p-date').value;
+  const cls   = CLASSES.find(c=>c.c===document.getElementById('p-cls').value);
+  const total = parseInt(document.getElementById('p-total').value)||0;
+
+  if (!date || !cls)  { alert('請填寫日期和班級'); return; }
+  if (total<=0)       { alert('請填寫投票總數'); return; }
+
+  const seats = window._parsedSeats || {};
+  showSuccess(date, cls, total, seats);
+}
+
+// ===== 顯示成功並產生LINE訊息 =====
+function showSuccess(date, cls, total, seats) {
+  const d = new Date(date+'T00:00:00');
+  const mo=d.getMonth()+1, da=d.getDate();
+  const wdays='日一二三四五六';
+  const dateStr = `${mo}/${da}（${wdays[d.getDay()]}）`;
+  const rate = (total/cls.sz*100).toFixed(1);
+
+  const seatList = Object.entries(seats).sort((a,b)=>+a[0]-+b[0])
+    .map(([s,v])=>`${String(+s).padStart(2,'0')}號 ${v}票`).join('、');
+
+  const msg = [
+    `班級：${cls.c}`,
+    `日期：${dateStr}`,
+    `投票總數：${total}票`,
+    `投票率：${rate}%`,
+    seatList ? `座號明細：\n${seatList}` : '（無座號明細）',
+  ].join('\n');
+
+  document.getElementById('success-sub').textContent =
+    `${cls.g}年級 ${cls.c}｜${dateStr}｜${total}票（${rate}%）`;
+  document.getElementById('copy-content').textContent = msg;
+
+  // 隱藏panel，顯示成功
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('success-panel').classList.add('show');
+  document.getElementById('success-panel').style.display='block';
+
+  window._lastMsg = msg;
+
+  // 送出到 Google Apps Script Web App
+  sendToSheet(date, cls.c, total, seats);
+}
+
+function copyResult() {
+  navigator.clipboard.writeText(window._lastMsg||'')
+    .then(()=>{ const b=document.querySelector('.btn-copy'); b.textContent='已複製！'; setTimeout(()=>b.textContent='複製訊息',2000); })
+    .catch(()=>{ alert(window._lastMsg); });
+}
+
+function resetForm() {
+  document.getElementById('success-panel').style.display='none';
+  document.getElementById('success-panel').classList.remove('show');
+  // 重設表單
+  document.getElementById('f-cls').value='';
+  document.getElementById('f-total').value='';
+  document.getElementById('seat-grid').classList.remove('show');
+  document.getElementById('cls-badge').classList.remove('show');
+  document.getElementById('vote-check-bar').style.display='none';
+  document.getElementById('prog').style.width='0%';
+  document.getElementById('p-cls').value='';
+  document.getElementById('p-total').value='';
+  document.getElementById('p-text').value='';
+  document.getElementById('parsed-preview').classList.remove('show');
+  window._parsedSeats={};
+  switchTab('form');
+}
+
+// ── google.script.run 直接呼叫 GAS 函式（不需要 fetch）──
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzSaHt78-_asuVnboA5RRaKfEQbAE_9YcdhQf0poRd28pZMOcK3gsDNbswFgXRjIqcb/exec';
+
+async function checkPreviousReport(cls, date) {
+  return new Promise((resolve) => {
+    google.script.run
+      .withSuccessHandler(result => resolve(result))
+      .withFailureHandler(() => resolve(null))
+      .checkSubmission(cls, date);
+  });
+}
+
+async function sendToSheet(date, cls, total, seats) {
+  const statusEl = document.getElementById('sync-status');
+  statusEl.style.display = 'block';
+
+  // 查詢是否已回報
+  statusEl.textContent = '🔍 確認回報狀態...';
+  statusEl.style.background = '#E8EAF6'; statusEl.style.color = '#5B2D8E';
+
+  const prev = await checkPreviousReport(cls.c || cls, date);
+
+  if (prev && prev.reported) {
+    const d = new Date(date + 'T00:00:00');
+    const dateLabel = `${d.getMonth()+1}/${d.getDate()}`;
+    const timeLabel = prev.reportedAt ? `（${prev.reportedAt} 回報）` : '';
+    const confirmed = confirm(
+      `⚠️ ${cls.c||cls} ${dateLabel} 已回報過 ${prev.total} 票${timeLabel}
+
+` +
+      `是否要修正為 ${total} 票？
+
+（按確定覆蓋，按取消保留原資料）`
+    );
+    if (!confirmed) {
+      statusEl.textContent = '✋ 已取消，保留原有資料';
+      statusEl.style.background = '#FFF9C4'; statusEl.style.color = '#5D4037';
+      return;
+    }
+  }
+
+  statusEl.textContent = '⏳ 正在寫入試算表...';
+  statusEl.style.background = '#E8EAF6'; statusEl.style.color = '#5B2D8E';
+
+  const payload = { date, cls: cls.c || cls, total, seats };
+
+  google.script.run
+    .withSuccessHandler(function(result) {
+      if (result && result.ok) {
+        statusEl.textContent = result.overwritten ? '✅ 已修正更新' : '✅ 已成功寫入試算表';
+        statusEl.style.background = '#E8F5E9'; statusEl.style.color = '#2E7D32';
+      } else {
+        statusEl.textContent = '❌ 寫入失敗：' + (result ? result.msg : '未知錯誤');
+        statusEl.style.background = '#FFEBEE'; statusEl.style.color = '#C62828';
+      }
+    })
+    .withFailureHandler(function(err) {
+      statusEl.textContent = '❌ 送出失敗，請截圖傳給管理者';
+      statusEl.style.background = '#FFEBEE'; statusEl.style.color = '#C62828';
+      console.error(err);
+    })
+    .submitVotes(payload);
+}
