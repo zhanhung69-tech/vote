@@ -612,66 +612,30 @@ function resetForm() {
   switchTab('form');
 }
 
-// ── google.script.run 直接呼叫 GAS 函式（不需要 fetch）──
+// ── 送出到 Google Apps Script ──
 const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzSaHt78-_asuVnboA5RRaKfEQbAE_9YcdhQf0poRd28pZMOcK3gsDNbswFgXRjIqcb/exec';
 
 async function checkPreviousReport(cls, date) {
-  return new Promise((resolve) => {
-    google.script.run
-      .withSuccessHandler(result => resolve(result))
-      .withFailureHandler(() => resolve(null))
-      .checkSubmission(cls, date);
-  });
+  return null;
 }
 
 async function sendToSheet(date, cls, total, seats) {
   const statusEl = document.getElementById('sync-status');
   statusEl.style.display = 'block';
-
-  // 查詢是否已回報
-  statusEl.textContent = '🔍 確認回報狀態...';
+  statusEl.textContent = '⏳ 正在送出...';
   statusEl.style.background = '#E8EAF6'; statusEl.style.color = '#5B2D8E';
 
-  const prev = await checkPreviousReport(cls.c || cls, date);
-
-  if (prev && prev.reported) {
-    const d = new Date(date + 'T00:00:00');
-    const dateLabel = `${d.getMonth()+1}/${d.getDate()}`;
-    const timeLabel = prev.reportedAt ? `（${prev.reportedAt} 回報）` : '';
-    const confirmed = confirm(
-      `⚠️ ${cls.c||cls} ${dateLabel} 已回報過 ${prev.total} 票${timeLabel}
-
-` +
-      `是否要修正為 ${total} 票？
-
-（按確定覆蓋，按取消保留原資料）`
-    );
-    if (!confirmed) {
-      statusEl.textContent = '✋ 已取消，保留原有資料';
-      statusEl.style.background = '#FFF9C4'; statusEl.style.color = '#5D4037';
-      return;
-    }
+  try {
+    await fetch(WEB_APP_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({ date, cls: cls.c || cls, total, seats })
+    });
+    statusEl.textContent = '✅ 已送出！約5秒後可到試算表確認';
+    statusEl.style.background = '#E8F5E9'; statusEl.style.color = '#2E7D32';
+  } catch(err) {
+    statusEl.textContent = '❌ 送出失敗，請截圖傳給管理者';
+    statusEl.style.background = '#FFEBEE'; statusEl.style.color = '#C62828';
   }
-
-  statusEl.textContent = '⏳ 正在寫入試算表...';
-  statusEl.style.background = '#E8EAF6'; statusEl.style.color = '#5B2D8E';
-
-  const payload = { date, cls: cls.c || cls, total, seats };
-
-  google.script.run
-    .withSuccessHandler(function(result) {
-      if (result && result.ok) {
-        statusEl.textContent = result.overwritten ? '✅ 已修正更新' : '✅ 已成功寫入試算表';
-        statusEl.style.background = '#E8F5E9'; statusEl.style.color = '#2E7D32';
-      } else {
-        statusEl.textContent = '❌ 寫入失敗：' + (result ? result.msg : '未知錯誤');
-        statusEl.style.background = '#FFEBEE'; statusEl.style.color = '#C62828';
-      }
-    })
-    .withFailureHandler(function(err) {
-      statusEl.textContent = '❌ 送出失敗，請截圖傳給管理者';
-      statusEl.style.background = '#FFEBEE'; statusEl.style.color = '#C62828';
-      console.error(err);
-    })
-    .submitVotes(payload);
 }
